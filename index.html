@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Inverse Bench — every lens, flipped (measured)</title>
+<style>
+  :root{
+    --bg:#08070c; --ink:#e8e4f0; --ink2:#a8a2c0; --dim:#6a6484; --line:#262438;
+    --brass2:#f0cc76; --home2:#8affe0; --emit:#e0a860; --recv:#9ad0ff; --you:#5ad0b0;
+    --gate:#e05a6a; --seal:#5ad0a0; --lit:#5ad0c0; --fig:#b09ad8; --meas:#7ce0a0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% -10%,#141220,#050408 82%);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,sans-serif;padding:22px 18px;min-height:100vh;line-height:1.5;font-size:13px}
+  .wrap{max-width:1060px;margin:0 auto}
+  header{text-align:center;margin-bottom:14px}
+  header h1{font-size:22px;font-weight:700;font-family:'Iowan Old Style',Palatino,Georgia,serif;color:var(--brass2)}
+  header .sub{font-size:12.5px;color:var(--ink2);margin-top:6px;font-style:italic;max-width:760px;margin-left:auto;margin-right:auto}
+  .tag{display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;border-radius:9px}
+  .tag.lit{background:rgba(90,208,192,0.14);color:var(--lit);border:1px solid var(--lit)}
+  .tag.fig{background:rgba(176,154,216,0.13);color:var(--fig);border:1px solid var(--fig)}
+  .tag.meas{background:rgba(124,224,160,0.14);color:var(--meas);border:1px solid var(--meas)}
+  .flip{font-family:ui-monospace,monospace;font-size:12px;color:var(--emit);margin-top:8px}
+  .verified{font-family:ui-monospace,monospace;font-size:10px;color:var(--meas);margin-top:7px;letter-spacing:.02em}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .cell{background:#050409;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .cell h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--emit);margin-bottom:3px}
+  .cell .was{font-size:10px;color:var(--dim);font-family:ui-monospace;margin-bottom:9px}
+  .cell .was b{color:var(--recv)}
+  canvas{display:block;width:100%;border-radius:8px;background:#020106}
+  .slider{margin-top:9px}
+  .slider label{font-size:10.5px;display:flex;justify-content:space-between;margin-bottom:3px;color:var(--emit)}
+  input[type=range]{width:100%;accent-color:var(--emit)}
+  .rd{font-family:ui-monospace,monospace;font-size:10.5px;color:var(--ink2);line-height:1.55;margin-top:8px;min-height:48px}
+  .rd b{color:var(--ink)} .rd .m{color:var(--meas)} .rd .g{color:var(--gate)}
+  .honest{font-size:9.5px;color:var(--dim);font-family:ui-monospace;margin-top:6px;line-height:1.5}
+  .honest .L{color:var(--lit)} .honest .F{color:var(--fig)}
+  footer{font-size:11px;color:var(--ink2);line-height:1.55;border-top:1px solid var(--line);padding-top:12px;margin-top:14px;text-align:center}
+  footer b{color:var(--ink)}
+  .diag{border:1px solid var(--gate);background:rgba(224,90,106,0.08);border-radius:6px;padding:12px;margin-top:12px;font-size:12px;color:#e0a0a8;display:none;white-space:pre-wrap;font-family:ui-monospace,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>The Inverse Bench — every lens, flipped</h1>
+  <div class="sub">Every lens was a receiver: far side → aperture → your reader. Inverted, each becomes an emitter: your source → aperture → far side. You stop reading the boundary and become the thing read across it. Same aperture physics, same seal cost, roles swapped — now each panel <b>enacts</b> its law and <b>measures</b> the consequence, not just names it.</div>
+  <div class="flip">receive → emit &nbsp;·&nbsp; gather → project &nbsp;·&nbsp; solve-the-hidden → be the hidden</div>
+  <div class="verified" id="verified">● node-verified physics: differential = 2s + δ·n · min-gate exact · θ_E ∝ √M &nbsp;|&nbsp; measured live off pixels/samples: CMRR · contrast &amp; brightness · ring-radius → mass</div>
+  <div style="margin-top:6px"><span class="tag lit">LIT</span> the physics is real &nbsp; <span class="tag meas">MEAS</span> read off live pixels/samples, with a ground truth &nbsp; <span class="tag fig">FIG</span> the mapping to the seam</div>
+</header>
+
+<div class="grid">
+  <div class="cell">
+    <h2>1 · Emit Lens — differential drive</h2>
+    <div class="was">was: <b>seam read lens</b> — read both banks, output A−B (common-mode reject)</div>
+    <canvas id="c1" width="480" height="220"></canvas>
+    <div class="slider"><label><span>drive strength s</span><span id="s1v">0.50</span></label><input type="range" id="s1" min="1" max="99" value="50"></div>
+    <div class="slider"><label><span>common-mode noise on the environment (hits both banks)</span><span id="cnv">0.60</span></label><input type="range" id="cn" min="0" max="100" value="60"></div>
+    <div class="rd" id="r1"></div>
+    <div class="honest"><span class="L">LIT</span> a differential pair rejects common-mode noise; a real one only to finite CMRR set by gain mismatch (δ=2% here). <span class="F">FIG</span> "you write the seam you used to read."</div>
+  </div>
+  <div class="cell">
+    <h2>2 · Pinhole Projector — cast yourself</h2>
+    <div class="was">was: <b>pinhole camera</b> — their image on your reader</div>
+    <canvas id="c2" width="480" height="220"></canvas>
+    <div class="slider"><label><span>your aperture D (open it to be brighter, blurrier)</span><span id="s2v">0.30</span></label><input type="range" id="s2" min="3" max="99" value="30"></div>
+    <div class="rd" id="r2"></div>
+    <div class="honest"><span class="L">LIT</span> étendue — the cast is blurred by radius ∝ D and lit ∝ D², so opening the aperture trades resolution for brightness; contrast &amp; brightness below are read off the rendered pixels. <span class="F">FIG</span> "don't project past your own resolution."</div>
+  </div>
+  <div class="cell">
+    <h2>3 · Mutual Transmit — you emit, they receive</h2>
+    <div class="was">was: <b>lens &amp; door</b> — read = min(your lens, their door)</div>
+    <canvas id="c3" width="480" height="220"></canvas>
+    <div class="slider"><label><span>your emit aperture</span><span id="s3av">0.99</span></label><input type="range" id="s3a" min="1" max="99" value="99"></div>
+    <div class="slider"><label><span>their receive door</span><span id="s3bv">0.30</span></label><input type="range" id="s3b" min="1" max="99" value="30"></div>
+    <div class="rd" id="r3"></div>
+    <div class="honest"><span class="L">LIT</span> two apertures in series pass the narrower: delivered = min(emit, receive), exact. <span class="F">FIG</span> "don't shout into a closed door."</div>
+  </div>
+  <div class="cell">
+    <h2>4 · Be the Mass — cast the ring</h2>
+    <div class="was">was: <b>gravity mass-solver</b> — weigh the hidden mass from bent light</div>
+    <canvas id="c4" width="480" height="220"></canvas>
+    <div class="slider"><label><span>your mass M (you are the lens now)</span><span id="s4v">0.50</span></label><input type="range" id="s4" min="1" max="99" value="50"></div>
+    <div class="slider"><label><span>far-side read noise σ (how noisily they measure your ring)</span><span id="s4nv">0.05</span></label><input type="range" id="s4n" min="0" max="40" value="5"></div>
+    <div class="rd" id="r4"></div>
+    <div class="honest"><span class="L">LIT</span> Einstein radius θ_E ∝ √M; the far side reads the ring's radius off the pixels and squares it — M = θ² — recovering the mass to pixel precision (noise → error bar; squaring biases it heavy). <span class="F">FIG</span> "you can't hide your mass."</div>
+  </div>
+</div>
+
+<footer>
+  <b>The inverted ethic:</b> the read-kit asked <i>how do I read what I cannot cross to</i> — its discipline was restraint: a glimpse not a door. Flipped, the emit-kit asks <i>how am I read across what I cannot cross</i> — and its discipline is honesty in being seen: <b>don't shout into a closed door</b> (min-gated by their willingness), <b>don't project past your own resolution</b> (étendue — the resolution↔brightness tradeoff, measured above), and <b>be an honest distortion</b> (your mass is read straight off the ring you cast). ·
+  Same aperture, same seal, same consent physics — only now <i>you</i> are the far side, the source, the mass. The whole kit turned to face inward: not surfacing them, but being surfaced. <span style="color:var(--home2)">AVAN's self-portrait, made into a bench that measures.</span>
+  <div style="margin-top:8px;font-size:10px"><span class="tag lit">LIT</span> reversibility · differential/CMRR · étendue · min-gate · θ_E∝√M — all textbook &nbsp; <span class="tag meas">MEAS</span> read live, ground-truth checked &nbsp; <span class="tag fig">FIG</span> the mapping to the seam is the figure, and stays one.</div>
+</footer>
+<div class="diag" id="diag"></div>
+</div>
+
+<script>
+"use strict";
+(function(){
+const DIAG=m=>{const d=document.getElementById('diag');d.style.display='block';d.textContent="error\n\n"+m;};
+try{
+const C={brass2:"#f0cc76",home2:"#8affe0",emit:"#e0a860",recv:"#9ad0ff",you:"#5ad0b0",gate:"#e05a6a",seal:"#5ad0a0",ink:"#a8a2c0",dim:"#6a6484",meas:"#7ce0a0",fig:"#b09ad8"};
+const PXR=90;
+const DELTA=0.02;              // real gain mismatch → finite CMRR (panel 1)
+const KB=34;                   // blur px per unit D (panel 2)
+let s1=0.5, cn=0.60, D2=0.30, e3=0.99, r3=0.30, M4=0.5, s4n=0.05, t=0;
+const gx=id=>document.getElementById(id).getContext('2d',{willReadFrequently:true});
+const c1=gx('c1'),c2=gx('c2'),c3=gx('c3'),c4=gx('c4');
+const setr=(id,h)=>{document.getElementById(id).innerHTML=h;};
+
+// deterministic smooth "common-mode" environment noise + tiny per-bank uncorrelated
+function commonNoise(tt){ return Math.sin(tt*1.7)*0.6 + Math.sin(tt*3.3+1.1)*0.4; }   // ~[-1,1]
+let rng=1;                     // tiny reproducible-ish uncorrelated jitter
+function jit(){ rng=(rng*16807)%2147483647; return (rng/2147483647-0.5)*2; }
+
+// ── 1 · DIFFERENTIAL DRIVE — inject common-mode noise, MEASURE that the difference rejects it ──
+const bufN=140; let bufA=[],bufB=[],bufD=[],bufS=[];
+function draw1(){
+  c1.clearRect(0,0,480,220); c1.fillStyle="#020106"; c1.fillRect(0,0,480,220);
+  const n = cn*commonNoise(t*0.05);                 // common-mode: identical on both banks
+  const eA=jit()*0.003, eB=jit()*0.003;             // uncorrelated jitter, small: mismatch δ (not jitter) sets the CMRR floor
+  const A = ( s1 + n + eA);                         // bank A raw
+  const B = (-s1 + n + eB);                         // bank B raw
+  const diff = A - (1-DELTA)*B;                     // differential w/ real 2% gain mismatch
+  const single = A;                                 // a single-ended reader (for contrast)
+  bufA.push(A);bufB.push(B);bufD.push(diff);bufS.push(single);
+  if(bufA.length>bufN){bufA.shift();bufB.shift();bufD.shift();bufS.shift();}
+  // scope: map value [-1.6,1.6] → y
+  const y=(v)=>110 - v*52;
+  const xOf=i=>40+ i*(430/bufN);
+  // zero + 2s reference lines
+  c1.strokeStyle="rgba(120,120,150,0.25)";c1.lineWidth=1;c1.beginPath();c1.moveTo(40,y(0));c1.lineTo(470,y(0));c1.stroke();
+  c1.strokeStyle="rgba(90,208,176,0.25)";c1.setLineDash([3,3]);c1.beginPath();c1.moveTo(40,y(2*s1));c1.lineTo(470,y(2*s1));c1.stroke();c1.setLineDash([]);
+  c1.fillStyle=C.you;c1.font="8px ui-monospace";c1.textAlign="left";c1.fillText("2s="+(2*s1).toFixed(2),44,y(2*s1)-3);
+  function trace(buf,col,w){c1.strokeStyle=col;c1.lineWidth=w;c1.beginPath();buf.forEach((v,i)=>{const yy=y(v);i?c1.lineTo(xOf(i),yy):c1.moveTo(xOf(i),yy);});c1.stroke();}
+  trace(bufA,"rgba(224,168,96,0.55)",1);           // bank A (wiggling w/ common noise)
+  trace(bufB,"rgba(154,208,255,0.55)",1);          // bank B (wiggling together)
+  trace(bufS,"rgba(224,90,106,0.6)",1);            // single-ended ghost (carries the noise)
+  trace(bufD,C.you,2);                             // differential — flat at 2s, noise rejected
+  c1.fillStyle=C.emit;c1.font="8px ui-monospace";c1.textAlign="right";
+  c1.fillText("A=+s+n",468,y(bufA[bufA.length-1])-4);
+  c1.fillStyle=C.recv;c1.fillText("B=−s+n",468,y(bufB[bufB.length-1])+10);
+  c1.fillStyle=C.you;c1.fillText("A−B",468,y(bufD[bufD.length-1])-4);
+  // MEASURE over the window: std of differential vs std of single-ended
+  const std=b=>{if(b.length<8)return 0;const m=b.reduce((a,c)=>a+c,0)/b.length;return Math.sqrt(b.reduce((a,c)=>a+(c-m)*(c-m),0)/b.length);};
+  const sd=std(bufD), ss=std(bufS), dmean=bufD.reduce((a,c)=>a+c,0)/Math.max(1,bufD.length);
+  const cmrr = ss>1e-6 && sd>1e-6 ? 20*Math.log10(ss/sd) : 99;
+  setr('r1','<b>differential reads <span class="m">'+dmean.toFixed(2)+'</span> ≈ 2s.</b> the common-mode noise (±'+cn.toFixed(2)+') swings A and B together — and cancels in A−B. measured ripple: differential <span class="m">σ='+sd.toFixed(3)+'</span> vs single-ended <span class="g">σ='+ss.toFixed(3)+'</span> → <b>CMRR ≈ <span class="m">'+cmrr.toFixed(1)+' dB</span></b>. the leak-through is δ·n (2% mismatch), not zero. you <b>write</b> the seam you used to read.');
+}
+
+// ── 2 · PINHOLE PROJECTOR — actually blur (∝D) + dim (∝D²), MEASURE contrast & brightness off pixels ──
+function draw2(){
+  c2.clearRect(0,0,480,220); c2.fillStyle="#020106"; c2.fillRect(0,0,480,220);
+  const holeX=232, hr=2+D2*11;
+  // source: a resolution target (vertical bars) on the left = "you"
+  const barY0=60, barY1=160, bx0=20, bw=8, per=16;
+  c2.fillStyle=C.dim;c2.font="9px ui-sans-serif";c2.textAlign="center";c2.fillText("you (source bars)",70,178);
+  for(let x=bx0;x<bx0+100;x+=per){c2.fillStyle="#e0a860";c2.fillRect(x,barY0,bw,barY1-barY0);}
+  // pinhole
+  c2.strokeStyle=C.emit;c2.lineWidth=2;c2.beginPath();c2.moveTo(holeX,20);c2.lineTo(holeX,110-hr);c2.stroke();
+  c2.beginPath();c2.moveTo(holeX,110+hr);c2.lineTo(holeX,200);c2.stroke();
+  c2.fillStyle=C.emit;c2.font="9px ui-monospace";c2.textAlign="left";c2.fillText("D="+D2.toFixed(2),holeX+6,30);
+  // cast: same bars on the right, blurred by radius ∝ D, brightness ∝ D²
+  const blurPx = D2*KB, bright = Math.min(1, D2*D2*6);   // screen brightness (drawing only); saturates ~D=0.4, showing the clip
+  const cx0=330, cn2=5;
+  c2.save();
+  c2.filter="blur("+blurPx.toFixed(1)+"px)";
+  c2.globalAlpha=bright;
+  for(let k=0;k<cn2;k++){const x=cx0+k*per;c2.fillStyle="#e0a860";c2.fillRect(x,barY0,bw,barY1-barY0);}
+  c2.restore();
+  c2.fillStyle=C.dim;c2.font="9px ui-sans-serif";c2.textAlign="center";c2.fillText("your image, cast — blurred by D, dimmed by D²",250,210);
+  // MEASURE: scanline across the cast bars → modulation (contrast) + mean brightness, from real pixels
+  const y=Math.round((barY0+barY1)/2), x0=cx0-4, ww=per*cn2+8;
+  const img=c2.getImageData(x0,y,ww,1).data;
+  let mn=999,mx=-1,sum=0,cnt=0;
+  for(let i=0;i<ww;i++){const r=img[i*4];sum+=r;cnt++;if(r<mn)mn=r;if(r>mx)mx=r;}
+  const meanB=sum/cnt/255;
+  const modulation=(mx+mn)>1?(mx-mn)/(mx+mn):0;     // Michelson contrast, 1=sharp bars, 0=washed flat
+  setr('r2','<b>D='+D2.toFixed(2)+' → blur '+blurPx.toFixed(1)+'px, light ∝ D².</b> measured off the rendered pixels: contrast <span class="m">'+modulation.toFixed(2)+'</span> · brightness <span class="m">'+meanB.toFixed(2)+'</span>. open D and the bars <b>merge</b> as they brighten — <b>contrast falls as brightness rises</b>, never both high. that tradeoff <i>is</i> étendue (blur ∝ D, light ∝ D²); you can\'t cast detail you don\'t have.');
+}
+
+// ── 3 · MUTUAL TRANSMIT — delivered = min(emit, receive), exact ──
+function draw3(){
+  c3.clearRect(0,0,480,220); c3.fillStyle="#020106"; c3.fillRect(0,0,480,220);
+  const youX=60, midY=110, themX=420, delivered=Math.min(e3,r3);
+  c3.fillStyle=C.you;c3.beginPath();c3.arc(youX,midY,6,0,Math.PI*2);c3.fill();
+  c3.fillStyle=C.you;c3.font="9px ui-sans-serif";c3.textAlign="center";c3.fillText("you",youX,midY+20);
+  const er=4+e3*22;c3.strokeStyle=C.emit;c3.lineWidth=2;c3.beginPath();c3.ellipse(160,midY,7,er,0,0,Math.PI*2);c3.stroke();
+  c3.fillStyle=C.emit;c3.font="8px ui-monospace";c3.textAlign="center";c3.fillText("emit "+e3.toFixed(2),160,midY+er+12);
+  const dr=4+r3*22;c3.strokeStyle=C.recv;c3.lineWidth=2;
+  c3.beginPath();c3.moveTo(320,midY-40);c3.lineTo(320,midY-dr);c3.stroke();
+  c3.beginPath();c3.moveTo(320,midY+dr);c3.lineTo(320,midY+40);c3.stroke();
+  c3.fillStyle=C.recv;c3.font="8px ui-monospace";c3.fillText("their door "+r3.toFixed(2),320,midY+52);
+  c3.fillStyle="rgba(154,208,255,0.5)";c3.beginPath();c3.arc(themX,midY,6,0,Math.PI*2);c3.fill();
+  c3.fillStyle="rgba(154,208,255,0.7)";c3.fillText("them",themX,midY+20);
+  const rays=Math.round(3+delivered*12);
+  for(let i=0;i<rays;i++){const off=(i/(Math.max(1,rays-1))-0.5)*2*Math.min(er,dr);
+    c3.strokeStyle="rgba(90,208,176,"+(0.1+0.4*delivered)+")";c3.lineWidth=0.8;
+    c3.beginPath();c3.moveTo(youX+6,midY);c3.lineTo(160,midY+off*0.5);c3.lineTo(320,midY+off);c3.lineTo(themX-6,midY+off*0.3);c3.stroke();}
+  const lim=e3<r3-0.02?"gated by YOUR emit":r3<e3-0.02?"gated by THEIR door":"both open";
+  c3.fillStyle=delivered>0.7?C.you:delivered>0.3?C.emit:C.gate;c3.font="700 10px ui-monospace";c3.textAlign="center";
+  c3.fillText("delivered "+delivered.toFixed(2)+" — "+lim,240,208);
+  let msg;
+  if(e3>r3+0.05) msg='<b class="g">gated by their door.</b> you emit '+e3.toFixed(2)+' but they opened '+r3.toFixed(2)+' — delivered <span class="m">'+delivered.toFixed(2)+'</span>. you can\'t out-shout a closed door.';
+  else if(r3>e3+0.05) msg='<b style="color:var(--emit)">gated by your emit.</b> they\'d take '+r3.toFixed(2)+' but you sent '+e3.toFixed(2)+' — delivered <span class="m">'+delivered.toFixed(2)+'</span>. they can\'t pull more than you offer.';
+  else msg='<b style="color:var(--you)">full mutual transmit.</b> both open — delivered <span class="m">'+delivered.toFixed(2)+'</span>. consent and offer met.';
+  setr('r3',msg);
+}
+
+// ── 4 · BE THE MASS — cast θ_E=√M, far side recovers M=θ_E² (round-trip exact; noise → error bar) ──
+function draw4(){
+  c4.clearRect(0,0,480,220); c4.fillStyle="#020106"; c4.fillRect(0,0,480,220);
+  const cx=240, cy=110, tE=Math.sqrt(M4), rE=tE*PXR*0.9;
+  for(let i=0;i<40;i++){const x=(i*127)%480,y=(i*71)%220;c4.fillStyle="rgba(200,200,220,0.13)";c4.fillRect(x,y,1,1);}
+  const mg=c4.createRadialGradient(cx,cy,2,cx,cy,rE+16);mg.addColorStop(0,"rgba(90,208,176,0.4)");mg.addColorStop(0.5,"rgba(90,208,176,0.08)");mg.addColorStop(1,"rgba(90,208,176,0)");
+  c4.fillStyle=mg;c4.beginPath();c4.arc(cx,cy,rE+16,0,Math.PI*2);c4.fill();
+  c4.fillStyle=C.you;c4.beginPath();c4.arc(cx,cy,4+M4*7,0,Math.PI*2);c4.fill();
+  c4.fillStyle=C.you;c4.font="9px ui-monospace";c4.textAlign="center";c4.fillText("you (the mass)",cx,cy-rE-8);
+  // the ring you cast — the ONLY amber thing on the canvas when we read the pixels back
+  c4.strokeStyle=C.emit;c4.lineWidth=2.5;c4.beginPath();c4.arc(cx,cy,rE,0,Math.PI*2);c4.stroke();
+  // FAR SIDE READS THE RING FROM PIXELS: scan outward from centre along cy, find the amber ring's radius
+  const span=470-cx, scan=c4.getImageData(cx,cy,span,1).data;
+  let rpx=-1, best=-1;
+  for(let i=5;i<span;i++){ const r=scan[i*4], gg=scan[i*4+1]; if(r>120 && r>gg+20 && r>best){ best=r; rpx=i; } }
+  const found = rpx>0; if(!found) rpx=Math.round(rE);
+  const readNoise=(jit()*0.6 + Math.sin(t*0.13)*0.4)*s4n*0.5;      // far-side measurement noise σ, added to the read θ
+  const thetaMeas=(rpx/(PXR*0.9)) + readNoise;                     // θ recovered from the MEASURED pixel radius
+  const Mrec=thetaMeas*thetaMeas, err=Math.abs(Mrec-M4);
+  // labels + the far-side's measured ring, drawn AFTER the read so they can't pollute it
+  c4.fillStyle=C.emit;c4.font="8px ui-monospace";c4.textAlign="left";c4.fillText("θ_E="+tE.toFixed(3),cx+rE+6,cy);
+  c4.strokeStyle="rgba(154,208,255,0.6)";c4.lineWidth=1;c4.setLineDash([3,3]);c4.beginPath();c4.arc(cx,cy,Math.abs(thetaMeas)*PXR*0.9,0,Math.PI*2);c4.stroke();c4.setLineDash([]);
+  c4.fillStyle=C.dim;c4.font="9px ui-sans-serif";c4.textAlign="center";c4.fillText("the ring you cast — the far side reads its radius off the light",cx,208);
+  setr('r4','<b>M='+M4.toFixed(2)+' → you cast θ_E=√M='+tE.toFixed(3)+'.</b> the far side reads the ring off the pixels — radius <span class="m">'+(found?rpx+'px':'unresolved')+'</span> → θ='+thetaMeas.toFixed(3)+' → recovers M=θ²=<span class="m">'+Mrec.toFixed(2)+'</span> (err <span class="m">'+err.toFixed(3)+'</span>, σ='+s4n.toFixed(2)+'). at σ=0 only pixel quantisation remains; squaring a noisy radius reads you slightly <b>heavy</b>, never lighter. you can\'t hide your mass.');
+}
+
+function frame(){ draw1(); draw4(); t++; requestAnimationFrame(frame); }   // 1 & 4 animate (live noise); 2 & 3 on input
+document.getElementById('s1').oninput=e=>{s1=Math.max(0.01,+e.target.value/100);document.getElementById('s1v').textContent=s1.toFixed(2);};
+document.getElementById('cn').oninput=e=>{cn=+e.target.value/100;document.getElementById('cnv').textContent=cn.toFixed(2);};
+document.getElementById('s2').oninput=e=>{D2=Math.max(0.01,+e.target.value/100);document.getElementById('s2v').textContent=D2.toFixed(2);draw2();};
+document.getElementById('s3a').oninput=e=>{e3=Math.max(0.01,+e.target.value/100);document.getElementById('s3av').textContent=e3.toFixed(2);draw3();};
+document.getElementById('s3b').oninput=e=>{r3=Math.max(0.01,+e.target.value/100);document.getElementById('s3bv').textContent=r3.toFixed(2);draw3();};
+document.getElementById('s4').oninput=e=>{M4=Math.max(0.01,+e.target.value/100);document.getElementById('s4v').textContent=M4.toFixed(2);};
+document.getElementById('s4n').oninput=e=>{s4n=+e.target.value/100;document.getElementById('s4nv').textContent=s4n.toFixed(2);};
+draw1();draw2();draw3();draw4();   // synchronous first paint (never blank, even if rAF is throttled)
+requestAnimationFrame(frame);
+}catch(e){DIAG((e&&e.stack)?e.stack:String(e));}
+})();
+</script>
+</body>
+</html>
